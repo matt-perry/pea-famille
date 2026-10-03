@@ -1,5 +1,35 @@
 import { describe, expect, it } from 'vitest';
-import { fetchEod, fileNameFor, isRobotWindow, mergeBars, parseEodResponse, parseSymbols, targetSession } from '../robot/lib';
+import {
+  fetchBars,
+  fetchEod,
+  fileNameFor,
+  isRobotWindow,
+  mergeBars,
+  parseEodResponse,
+  parseSymbols,
+  parseYahooResponse,
+  targetSession,
+} from '../robot/lib';
+
+/** Réponse Yahoo réaliste : séances datées à l'ouverture (9 h Paris = 7 h UTC en été). */
+function yahooChart(rows: [string, number | null][], currency = 'EUR') {
+  return {
+    chart: {
+      result: [
+        {
+          meta: { currency, symbol: 'DCAM.PA', gmtoffset: 7200, exchangeTimezoneName: 'Europe/Paris' },
+          timestamp: rows.map(([d]) => Date.parse(`${d}T07:00:00Z`) / 1000),
+          indicators: {
+            quote: [{ close: rows.map(([, c]) => c) }],
+            adjclose: [{ adjclose: rows.map(([, c]) => c) }],
+          },
+        },
+      ],
+      error: null,
+    },
+  };
+}
+
 
 describe('robot des cours', () => {
   it('lit la liste des symboles et refuse les erreurs de saisie', () => {
@@ -52,6 +82,60 @@ describe('robot des cours', () => {
     const fakeFetch = (async () => new Response('Ticker Not Found', { status: 404 })) as typeof fetch;
     await expect(fetchEod('XXX.PA', '2026-09-01', 'SECRET123', fakeFetch)).rejects.toThrow(/404/);
     await expect(fetchEod('XXX.PA', '2026-09-01', 'SECRET123', fakeFetch)).rejects.not.toThrow(/SECRET123/);
+  });
+
+  it('interprète la réponse Yahoo Finance : dates de Paris, bruit des flottants retiré, trous ignorés', () => {
+    const bars = parseYahooResponse(
+      yahooChart([
+        ['2026-09-30', 6.251000118255615],
+        ['2026-10-01', null],
+        ['2026-10-02', 6.308000087738037],
+      ]),
+    );
+    expect(bars).toEqual([
+      ['2026-09-30', 6.251, 6.251],
+      ['2026-10-02', 6.308, 6.308],
+    ]);
+  });
+
+  it('refuse une réponse Yahoo en erreur ou dans une autre devise', () => {
+    expect(() => parseYahooResponse({ chart: { result: null, error: { description: 'No data found, symbol may be delisted' } } })).toThrow(/delisted/);
+    expect(() => parseYahooResponse(yahooChart([['2026-10-02', 70.1]], 'USD'))).toThrow(/USD/);
+    expect(() => parseYahooResponse({})).toThrow();
+  });
+
+  it('prend Yahoo sans clé et ne garde que les séances terminées', async () => {
+    const calls: string[] = [];
+    const fakeFetch = (async (url: string | URL) => {
+      calls.push(String(url));
+      return Response.json(
+        yahooChart([
+          ['2026-10-01', 6.251],
+          ['2026-10-02', 6.308],
+          ['2026-10-05', 6.4], // séance en cours : à ignorer
+        ]),
+      );
+    }) as typeof fetch;
+    const result = await fetchBars('DCAM.PA', '2026-10-01', '2026-10-02', { fetchImpl: fakeFetch });
+    expect(result.source).toBe('Yahoo Finance');
+    expect(result.bars.map((b) => b[0])).toEqual(['2026-10-01', '2026-10-02']);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toContain('query1.finance.yahoo.com/v8/finance/chart/DCAM.PA');
+  });
+
+  it("passe à EODHD si Yahoo échoue et qu'une clé existe, sans jamais l'afficher", async () => {
+    const fakeFetch = (async (url: string | URL) => {
+      if (String(url).includes('yahoo')) return new Response('Too Many Requests', { status: 429 });
+      return Response.json([{ date: '2026-10-02', close: 6.308, adjusted_close: 6.308 }]);
+    }) as typeof fetch;
+    const result = await fetchBars('DCAM.PA', '2026-10-01', '2026-10-02', { eodhdKey: 'SECRET123', fetchImpl: fakeFetch });
+    expect(result).toEqual({ source: 'EODHD', bars: [['2026-10-02', 6.308, 6.308]] });
+
+    const allDown = (async () => new Response('down', { status: 503 })) as typeof fetch;
+    await expect(fetchBars('DCAM.PA', '2026-10-01', '2026-10-02', { fetchImpl: allDown })).rejects.toThrow(/Yahoo Finance a répondu 503/);
+    const both = fetchBars('DCAM.PA', '2026-10-01', '2026-10-02', { eodhdKey: 'SECRET123', fetchImpl: allDown });
+    await expect(both).rejects.toThrow(/Secours : EODHD a répondu 503/);
+    await expect(fetchBars('DCAM.PA', '2026-10-01', '2026-10-02', { eodhdKey: 'SECRET123', fetchImpl: allDown })).rejects.not.toThrow(/SECRET123/);
   });
 
   it('nomme les fichiers sans caractère dangereux', () => {

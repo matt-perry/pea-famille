@@ -171,7 +171,7 @@ export function MarketView() {
 
       <Section
         title="État"
-        footer="Le robot GitHub récupère les clôtures chez EODHD chaque soir de séance, vers 20 h–21 h. L'app les lit à chaque ouverture."
+        footer="Le robot GitHub récupère les clôtures chez Yahoo Finance chaque soir de séance, vers 19 h 45–20 h 30. L'app les lit à chaque ouverture."
       >
         <Row
           title="Dernière synchronisation"
@@ -257,7 +257,7 @@ export function MarketView() {
               <strong>New repository secret</strong> : nom <code>DATA_KEY</code>, valeur = la clé ci-dessus.
             </li>
             <li>
-              Nouveau secret <code>EODHD_API_KEY</code> : ta clé gratuite eodhd.com (elle ne va jamais sur l'iPhone).
+              Facultatif : un secret <code>EODHD_API_KEY</code> (clé gratuite eodhd.com) sert de secours si Yahoo Finance ne répond pas.
             </li>
             <li>
               Onglet <strong>Actions › Robot du soir › Run workflow</strong> pour récupérer l'historique tout de suite.
@@ -332,7 +332,7 @@ export function MethodsView() {
           plafond est appliqué. Hypothèses mathématiques, jamais des prévisions.
         </p>
         <h3>Sources</h3>
-        <p>Cours de clôture : EODHD, via le robot GitHub. Euronext Paris ferme à 17 h 30 ; les cours arrivent en général vers 20 h–21 h.</p>
+        <p>Cours de clôture : Yahoo Finance (EODHD en secours si une clé est fournie), via le robot GitHub. Euronext Paris ferme à 17 h 30 ; les cours arrivent en général vers 19 h 45–20 h 30.</p>
       </div>
     </div>
   );

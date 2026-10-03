@@ -2,18 +2,20 @@
  * Robot du soir (exécuté par GitHub Actions).
  *
  * 1. Vérifie qu'on est un soir de séance (ou un lancement manuel).
- * 2. Pour chaque symbole de config/symbols.json, récupère chez EODHD les cours manquants.
+ * 2. Pour chaque symbole de config/symbols.json, récupère les cours manquants chez
+ *    Yahoo Finance (sans compte). Si Yahoo échoue et qu'une clé EODHD existe, EODHD prend le relais.
  *    Tant que la clôture du jour n'est pas publiée, seul le premier symbole (« témoin »)
- *    est interrogé, pour économiser les 20 appels quotidiens de l'offre gratuite.
+ *    est interrogé, pour limiter les appels.
  * 3. Écrit data/prices/<symbole>.json chiffré avec DATA_KEY, et data/status.json (sans cours).
  *
- * Variables d'environnement : EODHD_API_KEY, DATA_KEY, FORCE=1 (lancement manuel).
+ * Variables d'environnement : DATA_KEY (obligatoire), EODHD_API_KEY (facultatif, secours),
+ * FORCE=1 (lancement manuel).
  */
 import { existsSync } from 'node:fs';
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { decryptJSON, encryptJSON, isValidDataKey, type EncryptedPayload, type PriceFile } from '../src/core';
 import {
-  fetchEod,
+  fetchBars,
   fileNameFor,
   isRobotWindow,
   mergeBars,
@@ -40,9 +42,8 @@ async function main(): Promise<void> {
     return;
   }
 
-  const apiKey = process.env.EODHD_API_KEY?.trim() ?? '';
+  const eodhdKey = process.env.EODHD_API_KEY?.trim() || undefined;
   const dataKey = process.env.DATA_KEY?.trim() ?? '';
-  if (!apiKey) throw new Error('Secret EODHD_API_KEY manquant (GitHub › Settings › Secrets and variables › Actions).');
   if (!isValidDataKey(dataKey)) throw new Error('Secret DATA_KEY manquant ou invalide : copie la clé affichée dans l’app (Réglages › Données de marché).');
 
   const symbols = parseSymbols(JSON.parse(await readFile(path('config/symbols.json'), 'utf8')));
@@ -80,22 +81,22 @@ async function main(): Promise<void> {
 
     const from = last ? nextDay(last) : tracked.since;
     try {
-      const incoming = await fetchEod(tracked.symbol, from, apiKey);
+      const { bars: incoming, source } = await fetchBars(tracked.symbol, from, target, { eodhdKey });
       const merged = mergeBars(bars, incoming);
       const newLast = merged.at(-1)?.[0] ?? null;
       if (merged.length !== bars.length || newLast !== last) {
         const file: PriceFile = {
           symbol: tracked.symbol,
           currency: 'EUR',
-          source: 'EODHD',
+          source,
           updatedAt: now.toISOString(),
           bars: merged,
         };
         await writeFile(filePath, JSON.stringify(await encryptJSON(file, dataKey)) + '\n');
         changed = true;
-        console.log(`${tracked.symbol} : ${merged.length - bars.length} séance(s) ajoutée(s), dernière ${newLast}.`);
+        console.log(`${tracked.symbol} : ${merged.length - bars.length} séance(s) ajoutée(s) (${source}), dernière ${newLast}.`);
       } else {
-        console.log(`${tracked.symbol} : pas encore de nouvelle séance chez EODHD.`);
+        console.log(`${tracked.symbol} : pas encore de nouvelle séance chez ${source}.`);
       }
       status.symbols[tracked.symbol] = { lastDate: newLast, count: merged.length };
       if (index === 0 && (!newLast || newLast < target)) sentinelReady = false;

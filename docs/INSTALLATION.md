@@ -2,12 +2,11 @@
 
 Durée : 20 à 30 minutes, une seule fois. Il faut un compte GitHub, un iPhone sous iOS 16.4 ou plus, et un ordinateur pour l'envoi des fichiers.
 
-## 1. Créer la clé EODHD (gratuite)
+Aucun compte chez un fournisseur de cours n'est nécessaire : le robot lit les clôtures chez Yahoo Finance.
 
-1. Va sur [eodhd.com](https://eodhd.com) et crée un compte gratuit.
-2. Dans ton tableau de bord, copie ta **API key** et garde-la sous la main.
+## 1. (Facultatif) Clé EODHD de secours
 
-L'offre gratuite donne 20 appels par jour et un an d'historique : le robot en utilise 6 à 8 par soir pour un ETF.
+Si un jour Yahoo Finance ne répond plus, le robot peut utiliser EODHD à la place. Crée alors un compte gratuit sur [eodhd.com](https://eodhd.com), copie ton **API key** et ajoute-la en secret `EODHD_API_KEY` (étape 6). Sans cette clé, tout fonctionne avec Yahoo seul.
 
 ## 2. Créer le dépôt GitHub
 
@@ -52,7 +51,7 @@ Pour les évolutions suivantes, tu pourras connecter ce dossier à Claude : les 
 1. Dans l'app : **Réglages** (roue dentée) › **Données de marché** › **Générer une clé** › **Copier la clé**.
 2. Sur GitHub : **Settings › Secrets and variables › Actions › New repository secret**
    - Nom `DATA_KEY`, valeur : la clé copiée depuis l'app.
-   - Nom `EODHD_API_KEY`, valeur : ta clé EODHD.
+   - Facultatif : nom `EODHD_API_KEY`, valeur : ta clé EODHD (secours).
 3. Onglet **Actions** › **Robot du soir** › **Run workflow**. Attends la coche verte.
 4. Dans l'app : **Données de marché** › **Actualiser maintenant**. La date du dernier cours de DCAM.PA apparaît.
 
@@ -75,7 +74,9 @@ Astuce : copier sur l'iPhone et coller sur le Mac fonctionne directement si les 
 | --- | --- | --- |
 | La page GitHub Pages affiche 404 | Pages pas encore activé | Étape 4, puis relancer « Publier l'app » |
 | Robot du soir en rouge : « Secret DATA_KEY manquant » | Secret absent ou mal nommé | Étape 6.2, nom exact en majuscules |
-| Robot en rouge : « EODHD a répondu 401 » | Clé EODHD erronée | Recopier la clé dans le secret `EODHD_API_KEY` |
+| État du robot : « Yahoo Finance a répondu 429 » | Trop de demandes chez Yahoo | Rien à faire : nouvel essai au passage suivant (15 min) |
+| État du robot : « Yahoo Finance a répondu 404 » ou « No data found » | Symbole inconnu chez Yahoo | Vérifier le symbole dans `config/symbols.json` (ex. `DCAM.PA`) |
+| « EODHD a répondu 401 » | Clé EODHD de secours erronée | Recopier la clé dans le secret `EODHD_API_KEY`, ou supprimer ce secret |
 | Robot en rouge à l'étape « Enregistrer dans le dépôt » | Droits d'écriture manquants | Étape 4.2 |
 | L'app indique « impossible de déchiffrer » | La clé de l'app diffère du secret | Recopier la clé de l'app dans `DATA_KEY`, relancer le robot |
 | « Dernier cours connu » en orange depuis plusieurs jours | Robot en panne ou en veille | Onglet Actions : vérifier « Robot du soir », le réactiver si GitHub l'a mis en pause |

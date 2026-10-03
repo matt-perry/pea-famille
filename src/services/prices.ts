@@ -1,7 +1,7 @@
 /**
  * Récupère les cours publiés par le robot GitHub, les déchiffre et les range dans la base locale.
- * Les fichiers sont lus sur raw.githubusercontent.com (dépôt public), jamais sur EODHD :
- * l'iPhone ne connaît pas la clé EODHD.
+ * Les fichiers sont lus sur raw.githubusercontent.com (dépôt public), jamais chez le fournisseur
+ * des cours : l'iPhone ne contacte que GitHub.
  */
 import { decryptJSON, priceFileName, type EncryptedPayload, type Etf, type PriceBar, type PriceFile } from '../core';
 import { upsertPrices } from '../repositories/portfolio';
@@ -89,7 +89,7 @@ export async function syncPrices(etfs: Etf[], dataKey: string | null, baseOverri
         date,
         close: String(close),
         adjClose: adj === null ? undefined : String(adj),
-        source: file.source || 'EODHD',
+        source: file.source || 'robot',
         fetchedAt,
       }));
       await upsertPrices(bars);

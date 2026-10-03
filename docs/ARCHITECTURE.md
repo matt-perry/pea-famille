@@ -8,10 +8,10 @@ iPhone (app installée)                        GitHub (dépôt public)
 │ Écrans React (views/)        │   app +      │ Pages : héberge l'app          │
 │   ↓                          │ ◄──────────  │                                │
 │ ViewModels (viewmodels/)     │   cours      │ Actions : robot du soir        │
-│   ↓                          │   chiffrés   │   ← EODHD (cours de clôture)   │
+│   ↓                          │   chiffrés   │   ← Yahoo Finance (clôtures)   │
 │ Repositories + Services      │              │   → data/prices/*.json chiffrés │
-│   ↓                          │              │ Secrets : EODHD_API_KEY,       │
-│ core/ : moteur de calcul     │              │           DATA_KEY             │
+│   ↓                          │              │ Secrets : DATA_KEY             │
+│ core/ : moteur de calcul     │              │  (EODHD_API_KEY facultatif)    │
 │                              │              └────────────────────────────────┘
 │ IndexedDB : tes données      │
 └──────────────────────────────┘
@@ -37,7 +37,7 @@ Les mouvements et montants ne quittent jamais l'iPhone.
 | Table | Contenu |
 | --- | --- |
 | `accounts` | Les deux PEA : nom, titulaire, date d'ouverture, courtier |
-| `etfs` | Fonds suivis : nom, ticker, place, symbole EODHD, ISIN, devise, type, émetteur |
+| `etfs` | Fonds suivis : nom, ticker, place, symbole du robot, ISIN, devise, type, émetteur |
 | `movements` | Versements, achats, ventes, retraits, dividendes, frais, divisions (montants en texte décimal exact) |
 | `prices` | Cours de clôture par symbole et par jour (clé `[symbol+date]`) |
 | `kv` | Réglages : périmètre affiché, objectif, paramètres de projection, clé de lecture des cours, état de synchronisation |
@@ -51,5 +51,5 @@ Rien d'autre n'est stocké : quantités, PRU, valeurs, performances et historiqu
 ## Sécurité
 
 - Politique de sécurité du navigateur : l'app ne peut contacter que son propre site et `raw.githubusercontent.com`.
-- Aucune clé dans le code. La clé EODHD n'existe que dans les secrets GitHub.
+- Aucune clé dans le code. La clé de chiffrement (et l'éventuelle clé EODHD) n'existe que dans les secrets GitHub et sur l'iPhone.
 - Montants masqués quand l'app passe en arrière-plan.

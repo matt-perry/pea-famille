@@ -11,7 +11,7 @@ C'est une app web installée sur l'écran d'accueil de l'iPhone, hébergée et a
 - Saisie manuelle des achats et ventes ; les versements sont déduits automatiquement (saisie possible, ainsi que retraits, dividendes, frais et divisions).
 - Calcul automatique : quantité, PRU frais inclus, valeur, liquidités, plus-values latentes et réalisées, gain total.
 - Performance par période (séance, semaine, mois, année, depuis le début) avec une méthode qui neutralise les versements, rendement annualisé personnel, bilan année par année.
-- Cours de clôture récupérés chaque soir de séance par un robot GitHub chez EODHD, chiffrés, puis lus par l'app.
+- Cours de clôture récupérés chaque soir de séance par un robot GitHub chez Yahoo Finance (sans compte), chiffrés, puis lus par l'app.
 - Historique de valeur reconstruit à partir des mouvements et des cours stockés sur l'iPhone.
 - Objectif de patrimoine avec anneau de progression.
 - Projection à 25 ans : trois scénarios (4, 6, 8 %), plafond PEA de 150 000 € versés, inflation en option, tableau année par année.
@@ -24,7 +24,7 @@ C'est une app web installée sur l'écran d'accueil de l'iPhone, hébergée et a
 
 - **Aucune donnée inventée.** Un cours manquant n'est jamais remplacé : l'app affiche « Dernier cours connu » avec sa date, ou « Valeur incomplète ».
 - **Réel, projection, hypothèse** sont toujours distingués à l'écran.
-- **Confidentialité** : les mouvements et montants ne quittent jamais l'iPhone. GitHub ne voit que le code, des cours chiffrés et la clé EODHD (dans ses secrets). L'app ne demande jamais d'identifiant bancaire ou de courtier.
+- **Confidentialité** : les mouvements et montants ne quittent jamais l'iPhone. GitHub ne voit que le code, des cours chiffrés et la clé de chiffrement (dans ses secrets). L'app ne demande jamais d'identifiant bancaire ou de courtier.
 - **Simplicité** : pas de trading, de crypto, d'actualités, de recommandations ni d'indicateurs techniques.
 
 ## Documentation
@@ -38,12 +38,12 @@ C'est une app web installée sur l'écran d'accueil de l'iPhone, hébergée et a
 
 ## Secrets
 
-Aucune clé n'est écrite dans le code. Deux secrets sont à créer dans **GitHub › Settings › Secrets and variables › Actions** :
+Aucune clé n'est écrite dans le code. Les secrets se créent dans **GitHub › Settings › Secrets and variables › Actions** :
 
 | Secret | Rôle |
 | --- | --- |
-| `EODHD_API_KEY` | Clé gratuite eodhd.com, utilisée uniquement par le robot |
-| `DATA_KEY` | Clé de chiffrement des cours, générée par l'app (Réglages › Données de marché) |
+| `DATA_KEY` | **Obligatoire.** Clé de chiffrement des cours, générée par l'app (Réglages › Données de marché) |
+| `EODHD_API_KEY` | Facultatif. Clé gratuite eodhd.com, utilisée seulement si Yahoo Finance ne répond pas |
 
 ## Pour les développeurs
 
@@ -54,6 +54,6 @@ npm run dev       # app en local
 npm run build     # vérification des types + construction dans dist/
 ```
 
-Le robot se lance localement avec `EODHD_API_KEY=… DATA_KEY=… FORCE=1 npm run robot`.
+Le robot se lance localement avec `DATA_KEY=… FORCE=1 npm run robot` (et `EODHD_API_KEY=…` en option).
 
 Messages de commit : `feat:`, `fix:`, `test:`, `docs:`, `data:` (robot).

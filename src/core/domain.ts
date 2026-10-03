@@ -27,7 +27,7 @@ export interface Etf {
   /** Nom court affiché, ex. « MSCI World » */
   shortName: string;
   ticker: string;
-  /** Code de place EODHD, ex. « PA » pour Euronext Paris */
+  /** Code de place, ex. « PA » pour Euronext Paris (suffixe Yahoo et EODHD) */
   exchange: string;
   /** Symbole interrogé par le robot, ex. « DCAM.PA » */
   symbol: string;
@@ -76,7 +76,7 @@ export interface Movement {
 }
 
 export interface PriceBar {
-  /** Symbole EODHD, ex. « DCAM.PA » */
+  /** Symbole interrogé par le robot, ex. « DCAM.PA » */
   symbol: string;
   date: ISODate;
   /** Clôture brute, telle que cotée ce jour-là */

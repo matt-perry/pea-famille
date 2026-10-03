@@ -1,16 +1,22 @@
 # Données de marché
 
-## Source : EODHD
+## Source : Yahoo Finance (sans compte)
 
-Cours de clôture d'Euronext Paris fournis par [EODHD](https://eodhd.com), offre gratuite :
+Les cours de clôture d'Euronext Paris viennent de Yahoo Finance, interrogé chaque soir par le robot :
 
-- 20 appels par jour, un an d'historique, usage personnel ;
+- aucun compte, aucune clé ;
 - un appel par ETF, quelle que soit la période demandée ;
-- mise à jour des places européennes 2 à 3 h après la clôture (17 h 30), donc vers 19 h 30–20 h 30.
+- clôture disponible peu après la fin de séance (17 h 30), donc dès le premier passage du robot à 19 h 40.
 
-Si vos PEA ont plus d'un an d'historique un jour à reconstituer, un mois d'abonnement « EOD Historical Data — All World » (19,99 $) suffit pour tout récupérer une fois.
+À savoir : Yahoo n'offre pas d'API officielle ni de garantie. Il peut refuser ponctuellement (« 429 », trop de demandes) ou changer son format. Le robot réessaie au passage suivant, et l'app continue avec le dernier cours connu, affiché en orange avec sa date. Aucun cours n'est jamais inventé.
 
-L'offre gratuite étant réservée à l'usage personnel, les cours publiés dans ce dépôt public sont **chiffrés**.
+Les cours sont arrondis à 4 décimales pour retirer le bruit de calcul de Yahoo (ex. 6,308000087 → 6,308) ; une cotation Euronext n'a jamais plus de décimales.
+
+Les conditions d'utilisation de Yahoo réservent ces données à un usage personnel : les cours publiés dans ce dépôt public sont donc **chiffrés**.
+
+### Secours facultatif : EODHD
+
+Si un secret `EODHD_API_KEY` existe, le robot interroge [EODHD](https://eodhd.com) quand Yahoo échoue (offre gratuite : 20 appels par jour, un an d'historique). Sans ce secret, seul Yahoo est utilisé.
 
 ## Le robot du soir
 
@@ -22,7 +28,7 @@ Fichier `.github/workflows/soir.yml`, script `robot/fetch-prices.ts`.
 4. Il écrit `data/prices/<symbole>.json` (chiffré AES-256-GCM avec `DATA_KEY`) et `data/status.json` (sans aucun cours).
 5. Il enregistre ces fichiers dans le dépôt (commit `data: cours du AAAA-MM-JJ`).
 
-L'app lit ces fichiers sur `raw.githubusercontent.com` à chaque ouverture (au plus toutes les 15 minutes) et garde tout l'historique dans sa base locale. Si GitHub ou EODHD sont indisponibles, l'app continue avec les derniers cours connus et l'indique en orange.
+L'app lit ces fichiers sur `raw.githubusercontent.com` à chaque ouverture (au plus toutes les 15 minutes) et garde tout l'historique dans sa base locale. Si GitHub ou Yahoo Finance sont indisponibles, l'app continue avec les derniers cours connus et l'indique en orange.
 
 Lancement manuel : onglet **Actions › Robot du soir › Run workflow**. Il récupère alors tout l'historique manquant, quelle que soit l'heure.
 
@@ -44,4 +50,4 @@ Lancement manuel : onglet **Actions › Robot du soir › Run workflow**. Il ré
 
 - GitHub met en pause les tâches planifiées d'un dépôt public sans activité depuis 60 jours. Les enregistrements quotidiens du robot entretiennent cette activité ; si GitHub envoie un e-mail de mise en pause, réactive le robot dans l'onglet Actions.
 - GitHub peut retarder un passage de quelques minutes aux heures chargées : c'est pourquoi le robot passe à 7, 22, 37 et 52 minutes.
-- Le symbole EODHD d'un ETF de Paris est `TICKER.PA` (ex. `DCAM.PA` pour Amundi PEA Monde, ISIN FR001400U5Q4).
+- Le symbole d'un ETF de Paris est `TICKER.PA`, identique chez Yahoo et EODHD (ex. `DCAM.PA` pour Amundi PEA Monde). Pour vérifier un symbole, cherche-le sur finance.yahoo.com.
