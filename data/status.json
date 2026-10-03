@@ -1,10 +1,9 @@
 {
-  "updatedAt": null,
+  "updatedAt": "2026-10-03T14:45:39.473Z",
   "symbols": {
     "DCAM.PA": {
-      "lastDate": null,
-      "count": 0,
-      "error": "Yahoo Finance a répondu 429 pour DCAM.PA (trop de demandes, nouvel essai au prochain passage)."
+      "lastDate": "2026-10-01",
+      "count": 44
     }
   }
 }
