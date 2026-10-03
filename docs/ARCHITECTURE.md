@@ -29,7 +29,7 @@ Les mouvements et montants ne quittent jamais l'iPhone.
 | `src/services/` | Synchronisation des cours, sauvegarde | Pas de calcul financier |
 | `src/viewmodels/` | Assemblent les résultats du moteur pour chaque écran | N'inventent aucun chiffre |
 | `src/views/`, `src/components/` | Écrans et briques d'interface | Aucun calcul financier |
-| `robot/` | Script du robot du soir (Node, exécuté par GitHub Actions) | Réutilise `core/` (calendrier, chiffrement) |
+| `robot/` | Robot du soir (Node, exécuté par GitHub Actions) ; `yahoo.py` lit Yahoo Finance via yfinance (Python) | Réutilise `core/` (calendrier, chiffrement) ; chaque cours est revérifié côté Node |
 | `.github/workflows/` | `publier.yml` (tests → construction → GitHub Pages), `soir.yml` (robot) | Un test en échec bloque la publication |
 
 ## Modèle de données

@@ -5,6 +5,7 @@
 Les cours de clôture d'Euronext Paris viennent de Yahoo Finance, interrogé chaque soir par le robot :
 
 - aucun compte, aucune clé ;
+- Yahoo refuse souvent les appels directs venant des serveurs GitHub (« 429 ») : le robot passe donc d'abord par la bibliothèque Python [yfinance](https://github.com/ranaroussi/yfinance), qui se présente comme un navigateur, puis tente l'appel direct si yfinance échoue ;
 - un appel par ETF, quelle que soit la période demandée ;
 - clôture disponible peu après la fin de séance (17 h 30), donc dès le premier passage du robot à 19 h 40.
 
@@ -20,7 +21,7 @@ Si un secret `EODHD_API_KEY` existe, le robot interroge [EODHD](https://eodhd.co
 
 ## Le robot du soir
 
-Fichier `.github/workflows/soir.yml`, script `robot/fetch-prices.ts`.
+Fichier `.github/workflows/soir.yml`, scripts `robot/fetch-prices.ts` et `robot/yahoo.py` (yfinance, version fixée dans `robot/requirements.txt`).
 
 1. GitHub le lance toutes les 15 minutes du lundi au vendredi, en soirée.
 2. Il ne travaille qu'entre 19 h 40 et 23 h (heure de Paris), les jours de séance Euronext.

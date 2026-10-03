@@ -3,7 +3,8 @@
  *
  * 1. Vérifie qu'on est un soir de séance (ou un lancement manuel).
  * 2. Pour chaque symbole de config/symbols.json, récupère les cours manquants chez
- *    Yahoo Finance (sans compte). Si Yahoo échoue et qu'une clé EODHD existe, EODHD prend le relais.
+ *    Yahoo Finance, sans compte : via yfinance (robot/yahoo.py), sinon en appel direct.
+ *    Si Yahoo échoue et qu'une clé EODHD existe, EODHD prend le relais.
  *    Tant que la clôture du jour n'est pas publiée, seul le premier symbole (« témoin »)
  *    est interrogé, pour limiter les appels.
  * 3. Écrit data/prices/<symbole>.json chiffré avec DATA_KEY, et data/status.json (sans cours).

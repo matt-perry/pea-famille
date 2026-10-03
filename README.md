@@ -54,6 +54,6 @@ npm run dev       # app en local
 npm run build     # vérification des types + construction dans dist/
 ```
 
-Le robot se lance localement avec `DATA_KEY=… FORCE=1 npm run robot` (et `EODHD_API_KEY=…` en option).
+Le robot se lance localement avec `pip install -r robot/requirements.txt` puis `DATA_KEY=… FORCE=1 npm run robot` (et `EODHD_API_KEY=…` en option).
 
 Messages de commit : `feat:`, `fix:`, `test:`, `docs:`, `data:` (robot).
